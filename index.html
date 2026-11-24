@@ -23,6 +23,7 @@ label{display:block;font-weight:650;margin:10px 0 5px}input,select,textarea{widt
 footer{text-align:center;padding:20px;color:var(--muted)}a{text-decoration:none}
 @media(max-width:560px){main{padding:10px}.product{grid-template-columns:1fr}.product img{height:200px}.nav button{flex:1 1 40%}}
 </style>
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <header><h1 id="secretAdminTitle" title="Bonyeza mara tano kwa usimamizi">SOKO LA MIFUGO NA MAZAO YA UVUVI</h1>
@@ -47,6 +48,7 @@ footer{text-align:center;padding:20px;color:var(--muted)}a{text-decoration:none}
 'use strict';
 const SUPABASE_URL='https://lnanronrkchttsttjhzl.supabase.co';
 const SUPABASE_KEY='sb_publishable_Yo4K3eijzLFGLq_Dt9TZIg_2Z591qWH';
+ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const STORAGE_BUCKET='Product - images';
 const DISTRICTS=['Tanga City','Mkinga','Muheza','Pangani','Handeni','Handeni Town','Kilindi','Korogwe','Korogwe Town','Lushoto','Bumbuli'];
 const LIVESTOCK=['Mbuzi','Ng’ombe','Kondoo','Kuku','Wanyama wengine'];
@@ -68,10 +70,60 @@ function marketPhotoAt(p,i){return p[i]===undefined?'':(p[i]||'')}
 const DEFAULT_MARKET_PHOTOS=['https://lnanronrkchttsttjhzl.supabase.co/storage/v1/object/public/Product%20-%20images/mifugo.jpg','https://lnanronrkchttsttjhzl.supabase.co/storage/v1/object/public/Product%20-%20images/uvuvi.jpg'];
 function renderMarketPhotos(){let p=get('photos'),l=$('homeLivestockPhoto'),f=$('homeFishPhoto'),inside=$('insideMarketPhoto');let lp=p[0]===undefined?DEFAULT_MARKET_PHOTOS[0]:(p[0]||''),fp=p[1]===undefined?DEFAULT_MARKET_PHOTOS[1]:(p[1]||'');l.src=lp;l.classList.toggle('hidden',!lp);f.src=fp;f.classList.toggle('hidden',!fp);let src=currentMarket==='mifugo'?lp:fp;inside.src=src;inside.classList.toggle('hidden',!src)}
 function openMarket(m){currentMarket=m;hideAll();$('marketPage').classList.remove('hidden');$('marketTitle').textContent=m==='mifugo'?'SOKO LA MIFUGO':'SOKO LA MAZAO YA UVUVI';renderMarketPhotos();showListings()}
-async function sbRequest(path,options={}){let headers={apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY,...(options.headers||{})};let r=await fetch(SUPABASE_URL+path,{...options,headers});let body=await r.text();if(!r.ok)throw new Error(body||('HTTP '+r.status));return body?JSON.parse(body):null}
-function tablePath(table,query=''){return `/rest/v1/${table}${query?('?'+query):''}`}
-async function uploadPhoto(file,folder){if(!file)return '';if(file.size>5*1024*1024)throw new Error('Picha iwe chini ya MB 5.');let ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';let path=folder+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;let url=SUPABASE_URL+'/storage/v1/object/'+encodeURIComponent(STORAGE_BUCKET)+'/'+path.split('/').map(encodeURIComponent).join('/');let r=await fetch(url,{method:'POST',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY,'Content-Type':file.type||'image/jpeg','x-upsert':'false'},body:file});if(!r.ok)throw new Error(await r.text());return SUPABASE_URL+'/storage/v1/object/public/'+encodeURIComponent(STORAGE_BUCKET)+'/'+path.split('/').map(encodeURIComponent).join('/')}
-function areaParts(s){let p=String(s||'').split(' — ');return {district:p[0]||'',area:p.slice(1).join(' — ')}}
+async function sbRequest(path,options={}){
+ const {data:{session}}=await sb.auth.getSession();
+ const token=session?.access_token||SUPABASE_KEY;
+
+ const headers={
+  apikey:SUPABASE_KEY,
+  ...(options.headers||{}),
+  Authorization:'Bearer '+token
+ };
+
+ const r=await fetch(SUPABASE_URL+path,{
+  ...options,
+  headers
+ });
+
+ const body=await r.text();
+
+ if(!r.ok)throw new Error(body||('HTTP '+r.status));
+
+ return body?JSON.parse(body):null;
+}
+async function uploadPhoto(file,folder){
+if(!file)return '';
+
+if(file.size>5*1024*1024)
+throw new Error('Picha iwe chini ya MB 5.');
+
+let ext=(file.name.split('.').pop()||'jpg')
+.toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+
+let path=folder+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
+
+let url=SUPABASE_URL+'/storage/v1/object/'+encodeURIComponent(STORAGE_BUCKET)+'/'+path.split('/').map(encodeURIComponent).join('/');
+
+let {data:{session}}=await sb.auth.getSession();
+
+let token=session?.access_token||SUPABASE_KEY;
+
+let r=await fetch(url,{
+method:'POST',
+headers:{
+apikey:SUPABASE_KEY,
+Authorization:'Bearer '+token,
+'Content-Type':file.type||'image/jpeg',
+'x-upsert':'false'
+},
+body:file
+});
+
+if(!r.ok)throw new Error(await r.text());
+
+return SUPABASE_URL+'/storage/v1/object/public/'+encodeURIComponent(STORAGE_BUCKET)+'/'+path.split('/').map(encodeURIComponent).join('/');
+}
+ function areaParts(s){let p=String(s||'').split(' — ');return {district:p[0]||'',area:p.slice(1).join(' — ')}}
 function fromCloudAd(x){let p=areaParts(x.eneo);return {id:String(x.id),market:x.aina_soko,category:x.jamii||'',name:x.jina_bidhaa||'',price:x.bei||'',quantity:x.kiasi||'',district:p.district,area:p.area,description:x.maelezo||'',phone:x.simu||'',photo:x.picha||'',created:x.created_at||''}}
 function toCloudAd(a){return {jina_bidhaa:a.name,aina_soko:a.market,jamii:a.category,bei:a.price||null,kiasi:a.quantity||null,eneo:a.district+(a.area?' — '+a.area:''),maelezo:a.description||'',simu:a.phone,picha:a.photo||null}}
 async function fetchAds(){let rows=await sbRequest(tablePath('matangazo','select=*&order=created_at.desc'));return (rows||[]).map(fromCloudAd)}
@@ -90,11 +142,366 @@ function orderCard(o){let own=localPhone()&&phoneNorm(o.phone)===phoneNorm(local
 async function deleteOwnOrder(v){if(!confirm('Futa oda hii?'))return;try{let os=await fetchOrders(),o=os.find(x=>x.id===String(v));if(!o||phoneNorm(o.phone)!==phoneNorm(localPhone()))throw new Error('Huruhusiwi kufuta oda hii.');await sbRequest(tablePath('oda_maalumu','id=eq.'+encodeURIComponent(v)),{method:'DELETE'});showOrders()}catch(e){alert(e.message)}}
 function reportAd(v){let r=get('reports');if(r.some(x=>x.adId===v)){alert('Tangazo tayari limeripotiwa.');return}r.push({adId:v,created:Date.now()});set('reports',r);alert('Asante. Ripoti imerekodiwa kwenye kifaa hiki kwa sasa.')}
 async function openShops(m='all'){hideAll();$('shopsPage').classList.remove('hidden');let c=$('shopsContent');c.innerHTML='<div class="empty">Inatafuta maduka...</div>';try{let ss=await sbRequest(tablePath('maduka','select=*&order=created_at.desc'));ss=ss||[];ss=ss.filter(s=>m==='all'||s.aina_biashara==='all'||s.aina_biashara===m);if(!ss.length){c.innerHTML='<div class="empty">Hakuna maduka yaliyosajiliwa.</div>';return}c.innerHTML='';ss.forEach(s=>c.insertAdjacentHTML('beforeend',`<div class="card shop"><h3>${esc(s.jina_duka)}</h3><span class="badge">${esc(s.aina_biashara==='all'?'Vyote':marketLabel(s.aina_biashara))}</span><p>${esc(s.maelezo)}</p><p>${esc(s.eneo)} | Simu: ${esc(s.simu)}</p>${s.picha?`<img src="${esc(s.picha)}" alt="Picha ya duka">`:''}<button onclick="viewShop('${s.id}')">INGIA DUKANI</button></div>`))}catch(e){c.innerHTML=`<div class="notice">Imeshindikana kupakua maduka. Hakikisha jedwali <b>maduka</b> limeundwa. ${esc(e.message)}</div>`}}
-function shopRegister(){hideAll();$('shopsPage').classList.remove('hidden');$('shopsContent').innerHTML=`<div class="card"><h3>Sajili Duka</h3><form id="shopForm"><label>Jina la duka</label><input name="name" required><label>Aina ya biashara</label><select name="market"><option value="mifugo">Mifugo</option><option value="uvuvi">Mazao ya Uvuvi</option><option value="all">Vyote</option></select><label>Namba ya simu ya mmiliki</label><input name="phone" required><label>Wilaya</label>${districtSelect()}<label>Kata / Eneo</label><input name="area"><label>Maelezo</label><textarea name="description"></textarea><label>Picha ya duka</label><input type="file" name="photo" accept="image/*"><button type="submit">SAJILI DUKA</button></form></div>`;
-$('shopForm').onsubmit=async e=>{e.preventDefault();let f=e.target,fd=new FormData(f),b=f.querySelector('button');b.disabled=true;try{let photo=await uploadPhoto(f.photo.files[0],'maduka'),payload={jina_duka:fd.get('name'),aina_biashara:fd.get('market'),simu:fd.get('phone'),eneo:fd.get('district')+(fd.get('area')?' — '+fd.get('area'):''),maelezo:fd.get('description')||'',picha:photo||null};await sbRequest(tablePath('maduka'),{method:'POST',headers:{'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(payload)});localStorage.setItem('soko_phone',fd.get('phone'));alert('Duka limesajiliwa.');openShops('all')}catch(err){alert('Duka halijasajiliwa: '+err.message)}finally{b.disabled=false}}}
-async function myShopLogin(){let p=prompt('Ingiza namba ya simu uliyosajili duka:');if(!p)return;try{let rows=await sbRequest(tablePath('maduka','select=*&simu=eq.'+encodeURIComponent(p)));let s=(rows||[])[0];if(!s){alert('Duka halijapatikana.');return}shopPhone=s.simu;viewShop(s.id)}catch(e){alert(e.message)}}
-async function viewShop(v){hideAll();$('shopsPage').classList.remove('hidden');let c=$('shopsContent');c.innerHTML='<div class="empty">Inafungua duka...</div>';try{let rows=await sbRequest(tablePath('maduka','select=*&id=eq.'+encodeURIComponent(v))),s=rows?.[0];if(!s){c.innerHTML='Duka halijapatikana.';return}let ps=await sbRequest(tablePath('bidhaa_maduka','select=*&duka_id=eq.'+encodeURIComponent(v)+'&order=created_at.desc'));c.innerHTML=`<button class="secondary" onclick="openShops('${s.aina_biashara}')">← Maduka</button><div class="card"><h2>${esc(s.jina_duka)}</h2><p>${esc(s.maelezo)} — ${esc(s.eneo)}</p>${s.picha?`<img class="market-photo" src="${esc(s.picha)}">`:''}<p>Simu: ${esc(s.simu)}</p><a href="tel:${esc(s.simu)}"><button>Piga Simu</button></a> <a href="https://wa.me/${phoneNorm(s.simu)}" target="_blank"><button class="good">WhatsApp</button></a></div><h3>Bidhaa za Duka</h3>${phoneNorm(s.simu)===phoneNorm(shopPhone)?`<button onclick="productForm('${s.id}')">+ ONGEZA BIDHAA</button>`:''}<div id="shopProducts"></div>`;let pc=$('shopProducts');if(!ps?.length)pc.innerHTML='<div class="empty">Hakuna bidhaa.</div>';for(let p of (ps||[]))pc.insertAdjacentHTML('beforeend',`<div class="card product">${p.picha?`<img src="${esc(p.picha)}">`:'<div class="empty">Picha haipo</div>'}<div><h3>${esc(p.jina_bidhaa)}</h3><p>${esc(p.maelezo)}</p><p>Bei: ${esc(p.bei)} | <span class="badge">${esc(p.hali)}</span></p>${phoneNorm(s.simu)===phoneNorm(shopPhone)?`<button class="secondary small" onclick="productForm('${s.id}','${p.id}')">HARIRI</button> <button class="danger small" onclick="deleteProduct('${p.id}','${s.id}')">FUTA</button>`:''}</div></div>`)}catch(e){c.innerHTML=`<div class="notice">Imeshindikana kufungua duka: ${esc(e.message)}</div>`}}
-async function productForm(sid,pid=null){let s=(await sbRequest(tablePath('maduka','select=*&id=eq.'+encodeURIComponent(sid))))?.[0],p=pid?(await sbRequest(tablePath('bidhaa_maduka','select=*&id=eq.'+encodeURIComponent(pid))))?.[0]:null;if(!s||phoneNorm(s.simu)!==phoneNorm(shopPhone)){alert('Ni mmiliki wa duka pekee.');return}$('shopsContent').innerHTML=`<div class="card"><h3>${p?'Hariri Bidhaa':'Ongeza Bidhaa'}</h3><form id="prodForm"><label>Jina</label><input name="name" required value="${esc(p?.jina_bidhaa||'')}"><label>Bei</label><input name="price" value="${esc(p?.bei||'')}"><label>Hali</label><select name="status"><option>INAPATIKANA</option><option>IMEISHA</option><option>INATARAJIWA</option></select><label>Maelezo</label><textarea name="description">${esc(p?.maelezo||'')}</textarea><label>Picha</label><input name="photo" type="file" accept="image/*"><button>HIFADHI</button></form></div>`;$('prodForm').onsubmit=async e=>{e.preventDefault();let f=e.target,fd=new FormData(f),photo=f.photo.files[0]?await uploadPhoto(f.photo.files[0],'bidhaa'):p?.picha||'',payload={duka_id:Number(sid),jina_bidhaa:fd.get('name'),bei:fd.get('price'),hali:fd.get('status'),maelezo:fd.get('description'),picha:photo};if(p)await sbRequest(tablePath('bidhaa_maduka','id=eq.'+encodeURIComponent(pid)),{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});else await sbRequest(tablePath('bidhaa_maduka'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});viewShop(sid)}}
+function shopRegister(){
+hideAll();
+$('shopsPage').classList.remove('hidden');
+
+$('shopsContent').innerHTML=`
+<div class="card">
+<h3>Sajili Duka</h3>
+
+<form id="shopForm">
+
+<label>Chagua huduma</label>
+<select name="accountAction">
+<option value="signup">Tengeneza akaunti mpya</option>
+<option value="login">Nina akaunti tayari</option>
+</select>
+
+<label>Email</label>
+<input type="email" name="email" required>
+
+<label>Password</label>
+<input type="password" name="password" minlength="6" required>
+
+<label>Jina la duka</label>
+<input name="name" required>
+
+<label>Aina ya biashara</label>
+<select name="market">
+<option value="mifugo">Mifugo</option>
+<option value="uvuvi">Mazao ya Uvuvi</option>
+<option value="all">Vyote</option>
+</select>
+
+<label>Namba ya simu ya mmiliki</label>
+<input name="phone" required>
+
+<label>Wilaya</label>
+${districtSelect()}
+
+<label>Kata / Eneo</label>
+<input name="area">
+
+<label>Maelezo</label>
+<textarea name="description"></textarea>
+
+<label>Picha ya duka</label>
+<input type="file" name="photo" accept="image/*">
+
+<button type="submit">ENDELEA KUSAJILI DUKA</button>
+</form>
+</div>`;
+
+$('shopForm').onsubmit=async e=>{
+e.preventDefault();
+
+let f=e.target;
+let fd=new FormData(f);
+let b=f.querySelector('button');
+b.disabled=true;
+
+try{
+
+let email=fd.get('email').trim();
+let password=fd.get('password');
+let user;
+
+if(fd.get('accountAction')==='signup'){
+
+let result=await sb.auth.signUp({email,password});
+
+if(result.error)throw result.error;
+
+if(!result.data.session){
+alert('Akaunti imetengenezwa. Fungua email yako uthibitishe akaunti, kisha ingia tena.');
+return;
+}
+
+user=result.data.user;
+
+}else{
+
+let result=await sb.auth.signInWithPassword({email,password});
+
+if(result.error)throw result.error;
+
+user=result.data.user;
+}
+
+if(!user)throw new Error('Imeshindikana kupata taarifa za akaunti.');
+
+let photo=await uploadPhoto(f.photo.files[0],'maduka');
+
+let payload={
+jina_duka:fd.get('name'),
+aina_biashara:fd.get('market'),
+simu:fd.get('phone'),
+eneo:fd.get('district')+(fd.get('area')?' — '+fd.get('area'):''),
+wilaya:fd.get('district'),
+maelezo:fd.get('description')||'',
+picha:photo||null,
+mmiliki_id:user.id
+};
+
+await sbRequest(tablePath('maduka'),{
+method:'POST',
+headers:{
+'Content-Type':'application/json',
+Prefer:'return=minimal'
+},
+body:JSON.stringify(payload)
+});
+
+shopPhone=fd.get('phone');
+alert('Duka limesajiliwa kwa mafanikio.');
+openShops('all');
+
+}catch(err){
+
+alert('Duka halijasajiliwa: '+err.message);
+
+}finally{
+b.disabled=false;
+}
+};
+}
+async function myShopLogin(){
+$('shopsPage').classList.remove('hidden');
+hideAll();
+$('shopsPage').classList.remove('hidden');
+
+$('shopsContent').innerHTML=`
+<div class="card">
+<h3>Ingia kwenye Duka Lako</h3>
+<form id="shopLoginForm">
+<label>Email</label>
+<input type="email" name="email" required>
+
+<label>Password</label>
+<input type="password" name="password" required>
+
+<button type="submit">INGIA</button>
+</form>
+</div>`;
+
+$('shopLoginForm').onsubmit=async e=>{
+e.preventDefault();
+
+let f=e.target;
+let email=f.email.value.trim();
+let password=f.password.value;
+let b=f.querySelector('button');
+b.disabled=true;
+
+try{
+let result=await sb.auth.signInWithPassword({email,password});
+
+if(result.error)throw result.error;
+
+let user=result.data.user;
+
+let rows=await sbRequest(
+tablePath('maduka','select=*&mmiliki_id=eq.'+encodeURIComponent(user.id))
+);
+
+if(!rows?.length){
+throw new Error('Hakuna duka lililounganishwa na akaunti hii.');
+}
+
+shopPhone=rows[0].simu;
+viewShop(rows[0].id);
+
+}catch(err){
+alert('Imeshindikana kuingia: '+err.message);
+}finally{
+b.disabled=false;
+}
+};
+}
+async function niMmilikiWaDuka(s){
+  const {data:{user}}=await sb.auth.getUser();
+  return !!user && s.mmiliki_id===user.id;
+}
+ ```js
+async function viewShop(v){
+  hideAll();
+  $('shopsPage').classList.remove('hidden');
+
+  let c=$('shopsContent');
+  c.innerHTML='<div class="empty">Inafungua duka...</div>';
+
+  try{
+    let rows=await sbRequest(
+      tablePath('maduka','select=*&id=eq.'+encodeURIComponent(v))
+    );
+
+    let s=rows?.[0];
+
+    if(!s){
+      c.innerHTML='Duka halijapatikana.';
+      return;
+    }
+
+    let owner=await niMmilikiWaDuka(s);
+
+    let ps=await sbRequest(
+      tablePath('bidhaa_maduka','select=*&duka_id=eq.'+
+      encodeURIComponent(v)+'&order=created_at.desc')
+    );
+
+    c.innerHTML=`
+      <button class="secondary" onclick="openShops('${s.aina_biashara}')">← Maduka</button>
+
+      <div class="card">
+        <h2>${esc(s.jina_duka)}</h2>
+        <p>${esc(s.maelezo)} — ${esc(s.eneo)}</p>
+
+        ${s.picha?`<img class="market-photo" src="${esc(s.picha)}">`:''}
+
+        <p>Simu: ${esc(s.simu)}</p>
+
+        <a href="tel:${esc(s.simu)}"><button>Piga Simu</button></a>
+
+        <a href="https://wa.me/${phoneNorm(s.simu)}" target="_blank">
+          <button class="good">WhatsApp</button>
+        </a>
+      </div>
+
+      <h3>Bidhaa za Duka</h3>
+
+      ${owner?`<button onclick="productForm('${s.id}')">+ ONGEZA BIDHAA</button>`:''}
+
+      <div id="shopProducts"></div>
+    `;
+
+    let pc=$('shopProducts');
+
+    if(!ps?.length){
+      pc.innerHTML='<div class="empty">Hakuna bidhaa.</div>';
+    }
+
+    for(let p of (ps||[])){
+      pc.insertAdjacentHTML('beforeend',`
+        <div class="card product">
+          ${p.picha?`<img src="${esc(p.picha)}">`:'<div class="empty">Picha haipo</div>'}
+
+          <div>
+            <h3>${esc(p.jina_bidhaa)}</h3>
+            <p>${esc(p.maelezo)}</p>
+            <p>Bei: ${esc(p.bei)} |
+              <span class="badge">${esc(p.hali)}</span>
+            </p>
+
+            ${owner?`
+              <button class="secondary small"
+                onclick="productForm('${s.id}','${p.id}')">HARIRI</button>
+
+              <button class="danger small"
+                onclick="deleteProduct('${p.id}','${s.id}')">FUTA</button>
+            `:''}
+          </div>
+        </div>
+      `);
+    }
+
+  }catch(e){
+    c.innerHTML=`<div class="notice">Imeshindikana kufungua duka: ${esc(e.message)}</div>`;
+  }
+}
+```
+```js
+async function productForm(sid,pid=null){
+  let s=(await sbRequest(
+    tablePath('maduka','select=*&id=eq.'+encodeURIComponent(sid))
+  ))?.[0];
+
+  let p=pid?(await sbRequest(
+    tablePath('bidhaa_maduka','select=*&id=eq.'+encodeURIComponent(pid))
+  ))?.[0]:null;
+
+  if(!s || !(await niMmilikiWaDuka(s))){
+    alert('Ni mmiliki wa duka pekee.');
+    return;
+  }
+
+  $('shopsContent').innerHTML=`
+    <div class="card">
+      <h3>${p?'Hariri Bidhaa':'Ongeza Bidhaa'}</h3>
+
+      <form id="prodForm">
+        <label>Jina</label>
+        <input name="name" required value="${esc(p?.jina_bidhaa||'')}">
+
+        <label>Bei</label>
+        <input name="price" value="${esc(p?.bei||'')}">
+
+        <label>Hali</label>
+        <select name="status">
+          <option>Inapatikana</option>
+          <option>Imeisha</option>
+          <option>Inasubiri</option>
+        </select>
+
+        <label>Maelezo</label>
+        <textarea name="description">${esc(p?.maelezo||'')}</textarea>
+
+        <label>Picha</label>
+        <input name="photo" type="file" accept="image/*">
+
+        <button>HIFADHI</button>
+      </form>
+    </div>
+  `;
+
+  $('prodForm').onsubmit=async e=>{
+    e.preventDefault();
+
+    try{
+      let f=e.target;
+      let fd=new FormData(f);
+
+      let photo=f.photo.files[0]
+        ?await uploadPhoto(f.photo.files[0],'bidhaa')
+        :p?.picha||'';
+
+      let payload={
+        duka_id:Number(sid),
+        jina_bidhaa:fd.get('name'),
+        bei:fd.get('price'),
+        hali:fd.get('status'),
+        maelezo:fd.get('description'),
+        picha:photo
+      };
+
+      if(p){
+        await sbRequest(
+          tablePath('bidhaa_maduka','id=eq.'+encodeURIComponent(pid)),
+          {
+            method:'PATCH',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(payload)
+          }
+        );
+      }else{
+        await sbRequest(
+          tablePath('bidhaa_maduka'),
+          {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(payload)
+          }
+        );
+      }
+
+      await viewShop(sid);
+
+    }catch(err){
+      alert('Imeshindikana kuhifadhi bidhaa: '+err.message);
+    }
+  };
+}
+```
 async function deleteProduct(pid,sid){if(!confirm('Futa bidhaa hii?'))return;try{await sbRequest(tablePath('bidhaa_maduka','id=eq.'+encodeURIComponent(pid)),{method:'DELETE'});viewShop(sid)}catch(e){alert(e.message)}}
 function adminEnter(){let pw=prompt('Neno la siri la Admin:');if(pw!=='SOKO-ADMIN-CHANGE-ME'){alert('Neno la siri si sahihi.');return}let pin=prompt('PIN ya tarakimu 6:');if(pin!=='123456'){alert('PIN si sahihi.');return}adminOn=true;hideAll();$('adminPage').classList.remove('hidden');adminListings()}
 function adminLogout(){adminOn=false;goHome()}
