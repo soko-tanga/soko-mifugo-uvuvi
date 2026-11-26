@@ -11,27 +11,26 @@ body{background:#f5f5f0;padding:12px}
 .header h1{font-size:30px;color:#111}
 .header h1 span{color:#0a7a42}
 .header p{color:#666;margin-top:6px;font-size:14px}
-.topBtns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
-.topBtns button,.topBtns a{padding:13px 5px;border:none;border-radius:12px;font-weight:bold;font-size:14px;cursor:pointer;text-decoration:none;color:#fff;text-align:center}
+.topBtns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+.topBtns2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.topBtns button,.topBtns2 button{padding:14px 5px;border:none;border-radius:12px;font-weight:bold;font-size:15px;cursor:pointer;color:#fff}
 .btn-green{background:#0a7a42}
 .btn-orange{background:#e67e22}
 .btn-blue{background:#1a4d8f}
 .btn-purple{background:#6a1b9a}
 .btn-dark{background:#333}
 .card{background:#fff;border-radius:16px;overflow:hidden;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
-.card img{width:100%;height:200px;object-fit:cover;display:block}
+.card img{width:100%;height:260px;object-fit:cover;display:block}
 .card-body{padding:16px;text-align:center}
-.card-body h2{font-size:21px;margin-bottom:8px}
+.card-body h2{font-size:22px;margin-bottom:8px}
 .card-body p{color:#555;font-size:15px;margin-bottom:10px}
-.badge{background:#fff3cd;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:bold;display:inline-block;margin-bottom:12px}
-.btnBig{display:block;width:100%;padding:14px;border:none;border-radius:12px;color:#fff;font-weight:bold;font-size:16px;cursor:pointer;text-decoration:none;margin-top:5px}
+.badge{background:#fff3cd;padding:6px 16px;border-radius:20px;font-size:14px;font-weight:bold;display:inline-block;margin-bottom:12px}
+.btnBig{display:block;width:100%;padding:15px;border:none;border-radius:12px;color:#fff;font-weight:bold;font-size:16px;cursor:pointer}
 .formBox{background:#fff;border-radius:16px;padding:18px;margin-bottom:14px;display:none}
 .formBox label{display:block;text-align:left;font-weight:bold;margin:14px 0 6px;font-size:14px}
 .formBox input,.formBox select{width:100%;padding:13px;border:1px solid #ddd;border-radius:10px;font-size:15px;background:#fff}
-.formBox textarea{width:100%;padding:13px;border:1px solid #ddd;border-radius:10px;font-size:15px}
 .itemBox{background:#f0fdf4;padding:12px;border-radius:10px;margin-bottom:8px;text-align:left}
 .footer{text-align:center;color:#888;font-size:12px;padding:10px}
-#adminBox{display:none;background:#fff;border-radius:16px;padding:16px;margin-bottom:14px}
 </style>
 </head>
 <body>
@@ -47,14 +46,14 @@ body{background:#f5f5f0;padding:12px}
 <button class="btn-orange" onclick="showSection('uza')">💰 UZA</button>
 <button class="btn-blue" onclick="showSection('oda')">📦 ODA MAALUMU</button>
 </div>
-<div class="topBtns" style="grid-template-columns:1fr 1fr;">
+<div class="topBtns2">
 <button class="btn-purple" onclick="showSection('angalia')">👁️ ANGALIA ODA</button>
 <button class="btn-dark" onclick="showSection('maduka')">🏪 MADUKA</button>
 </div>
 
-<!-- SOKO LA MIFUGO -->
+<!-- SOKO LA MIFUGO - PICHA YA ASILI YA NG'OMBE -->
 <div class="card" id="secNunua">
-<img src="https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&q=80" alt="Mifugo">
+<img src="https://images.unsplash.com/photo-1546445317-29f4545e9d53?w=800&q=80" alt="Mifugo">
 <div class="card-body">
 <h2>🐐 SOKO LA MIFUGO</h2>
 <p>Mbuzi, Ng'ombe, Kuku, Kondoo</p>
@@ -64,7 +63,7 @@ body{background:#f5f5f0;padding:12px}
 </div>
 </div>
 
-<!-- SOKO LA UVUVI -->
+<!-- SOKO LA UVUVI - KAMA LILIVYOKUWA -->
 <div class="card">
 <img src="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=800&q=80" alt="Samaki">
 <div class="card-body">
@@ -76,13 +75,13 @@ body{background:#f5f5f0;padding:12px}
 </div>
 </div>
 
-<!-- FOMU YA UZA - IMEREKEBISHWA -->
+<!-- FOMU YA UZA - HAPA TU NDIPO NIMEREKEBISHA -->
 <div class="formBox" id="fomuUza">
 <h2 style="text-align:center">📝 FOMU YA UZA - <span id="sokoJina">Mifugo</span></h2>
 
-<!-- 1. AINA YA BIDHAA - MANUAL, HAITAJAZA AUTO -->
+<!-- 1. AINA YA BIDHAA - SASA NI MANUAL, SIO SELECT -->
 <label>1. Aina ya bidhaa *</label>
-<input type="text" id="ainaBidhaa" placeholder="Andika mwenyewe: Mf. Mbuzi, Ng'ombe, Samaki, Kuku..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+<input type="text" id="ainaBidhaa" placeholder="Andika mwenyewe: Mf. Mbuzi, Ng'ombe, Samaki..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 
 <!-- 2. JINA LA MUUZAJI - BADALA YA JINA LA BIDHAA -->
 <label>2. Jina la muuzaji *</label>
@@ -110,10 +109,10 @@ body{background:#f5f5f0;padding:12px}
 <input type="text" id="mtaa" placeholder="Mf. Nguvumali, Usagara..." autocomplete="off">
 
 <button class="btnBig btn-orange" onclick="tumaBidhaa()" style="margin-top:18px">TUMA BIDHAA ✅</button>
-<button class="btnBig" onclick="document.getElementById('fomuUza').style.display='none'" style="background:#999">Funga ❌</button>
+<button class="btnBig" onclick="document.getElementById('fomuUza').style.display='none'" style="background:#999;margin-top:8px">Funga ❌</button>
 </div>
 
-<!-- ODA MAALUMU -->
+<!-- ODA / MADUKA -->
 <div class="formBox" id="fomuOda">
 <h2 style="text-align:center">📦 ODA MAALUMU</h2>
 <label>Unataka nini?</label>
@@ -123,38 +122,35 @@ body{background:#f5f5f0;padding:12px}
 <label>Simu</label>
 <input type="tel" id="odaSimu" placeholder="0755...">
 <button class="btnBig btn-blue" onclick="tumaOda()" style="margin-top:15px">TUMA ODA ✅</button>
-<button class="btnBig" onclick="document.getElementById('fomuOda').style.display='none'" style="background:#999">Funga ❌</button>
+<button class="btnBig" onclick="document.getElementById('fomuOda').style.display='none'" style="background:#999;margin-top:8px">Funga ❌</button>
 <div id="odaList" style="margin-top:12px"></div>
 </div>
 
-<!-- MADUKA -->
 <div class="formBox" id="fomuMaduka">
 <h2 style="text-align:center">🏪 MADUKA</h2>
-<p style="text-align:center;color:#666">Maduka yaliyosajiliwa yataonekana hapa baadae.</p>
+<p style="text-align:center;color:#666">Maduka yaliyosajiliwa yataonekana hapa.</p>
 <button class="btnBig" onclick="document.getElementById('fomuMaduka').style.display='none'" style="background:#999">Funga ❌</button>
 </div>
 
 <div class="footer">© 2026 HubSoko Tanga - Soko la Wananchi</div>
 
 <script>
-let sokoChaguliwa = 'Mifugo';
-let bidhaa = JSON.parse(localStorage.getItem('hubsoko_bidhaa')||'[]');
-let oda = JSON.parse(localStorage.getItem('hubsoko_oda')||'[]');
-
+let sokoChaguliwa='Mifugo';
+let bidhaa=JSON.parse(localStorage.getItem('hubsoko_bidhaa')||'[]');
+let oda=JSON.parse(localStorage.getItem('hubsoko_oda')||'[]');
 function showSection(sec){
   document.getElementById('fomuUza').style.display='none';
   document.getElementById('fomuOda').style.display='none';
   document.getElementById('fomuMaduka').style.display='none';
   if(sec==='uza'){ funguaFomu('Mifugo'); }
-  if(sec==='nunua'){ window.scrollTo(0, document.getElementById('secNunua').offsetTop - 10); }
+  if(sec==='nunua'){ window.scrollTo(0, document.getElementById('secNunua').offsetTop-10); }
   if(sec==='oda'){ document.getElementById('fomuOda').style.display='block'; renderOda(); }
   if(sec==='angalia'){ document.getElementById('fomuOda').style.display='block'; renderOda(); }
   if(sec==='maduka'){ document.getElementById('fomuMaduka').style.display='block'; }
 }
-
 function funguaFomu(soko){
-  sokoChaguliwa = soko;
-  document.getElementById('sokoJina').innerText = soko;
+  sokoChaguliwa=soko;
+  document.getElementById('sokoJina').innerText=soko;
   document.getElementById('fomuOda').style.display='none';
   document.getElementById('fomuMaduka').style.display='none';
   document.getElementById('fomuUza').style.display='block';
@@ -163,10 +159,40 @@ function funguaFomu(soko){
   document.getElementById('bei').value='';
   document.getElementById('simu').value='';
   document.getElementById('mtaa').value='';
-  window.scrollTo(0, document.getElementById('fomuUza').offsetTop - 10);
+  window.scrollTo(0, document.getElementById('fomuUza').offsetTop-10);
 }
-
 function tumaBidhaa(){
-  let aina = document.getElementById('ainaBidhaa').value.trim();
-  let muuzaji = document.getElementById('jinaMuuzaji').value.trim();
-  let bei
+  let aina=document.getElementById('ainaBidhaa').value.trim();
+  let muuzaji=document.getElementById('jinaMuuzaji').value.trim();
+  let bei=document.getElementById('bei').value.trim();
+  let simu=document.getElementById('simu').value.trim();
+  let wilaya=document.getElementById('wilaya').value;
+  let mtaa=document.getElementById('mtaa').value.trim();
+  if(!aina||!muuzaji||!bei||!simu){ alert('Tafadhali jaza Aina ya Bidhaa, Jina la Muuzaji, Bei na Simu'); return; }
+  bidhaa.push({soko:sokoChaguliwa,aina:aina,muuzaji:muuzaji,bei:bei,simu:simu,wilaya:wilaya,mtaa:mtaa});
+  localStorage.setItem('hubsoko_bidhaa',JSON.stringify(bidhaa));
+  render();
+  alert('Asante '+muuzaji+'! Bidhaa yako ya '+aina+' imeongezwa');
+  document.getElementById('fomuUza').style.display='none';
+}
+function tumaOda(){
+  let b=document.getElementById('odaBidhaa').value.trim();
+  let j=document.getElementById('odaJina').value.trim();
+  let s=document.getElementById('odaSimu').value.trim();
+  if(!b||!j||!s){ alert('Jaza vyote'); return; }
+  oda.push({bidhaa:b,jina:j,simu:s});
+  localStorage.setItem('hubsoko_oda',JSON.stringify(oda));
+  renderOda(); alert('Oda imetumwa!');
+  document.getElementById('odaBidhaa').value=''; document.getElementById('odaJina').value=''; document.getElementById('odaSimu').value='';
+}
+function render(){
+  let m=bidhaa.filter(b=>b.soko==='Mifugo');
+  let u=bidhaa.filter(b=>b.soko==='Uvuvi');
+  document.getElementById('listMifugo').innerHTML=m.map(b=>`<div class="itemBox">🐐 <b>${b.aina}</b> - TZS ${Number(b.bei).toLocaleString()}<br>👤 Muuzaji: <b>${b.muuzaji}</b> | 📍 ${b.wilaya}, ${b.mtaa}<br><a href="https://wa.me/255${b.simu.replace(/^0/,'')}" style="color:#0a7a42;font-weight:bold">WhatsApp Muuzaji →</a></div>`).join('')||'<p style="color:#999;font-size:13px">Hakuna bidhaa bado</p>';
+  document.getElementById('listUvuvi').innerHTML=u.map(b=>`<div class="itemBox">🐟 <b>${b.aina}</b> - TZS ${Number(b.bei).toLocaleString()}<br>👤 Muuzaji: <b>${b.muuzaji}</b> | 📍 ${b.wilaya}, ${b.mtaa}<br><a href="https://wa.me/255${b.simu.replace(/^0/,'')}" style="color:#1a4d8f;font-weight:bold">WhatsApp Muuzaji →</a></div>`).join('')||'<p style="color:#999;font-size:13px">Hakuna bidhaa bado</p>';
+}
+function renderOda(){ document.getElementById('odaList').innerHTML=oda.map(o=>`<div class="itemBox">📦 <b>${o.bidhaa}</b><br>👤 ${o.jina} - ${o.simu}</div>`).join('')||'<p style="color:#999;font-size:13px">Hakuna oda bado</p>'; }
+render();
+</script>
+</body>
+</html>
